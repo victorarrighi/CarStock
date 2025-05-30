@@ -2,7 +2,12 @@ const apiUrl = 'http://localhost:8080/carros';
 
 function listarCarros() {
     fetch(apiUrl)
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`Erro: ${res.status}`);
+            }
+            return res.json();
+        })
         .then(carros => {
             const lista = document.getElementById('lista-carros');
             lista.innerHTML = '';
@@ -23,7 +28,8 @@ function listarCarros() {
 
                 lista.appendChild(item);
             });
-        });
+        })
+        .catch(err => console.error("Erro ao listar carros:", err));
 }
 
 function createCarro() {
@@ -34,11 +40,19 @@ function createCarro() {
     const carro = { modelo, marca, preco };
 
     fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(carro)
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(carro)
     })
-    .then(() => listarCarros());
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Erro ao criar carro: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(() => listarCarros())
+    .catch(error => console.error(error));
+
 }
 
 function deleteCarro(id) {
